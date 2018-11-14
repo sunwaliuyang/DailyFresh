@@ -84,8 +84,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME':'fresh',
         "USER":'root',
-        "PASSWORD":'***********',
-        "HOST":'***********',
+        "PASSWORD":'ZHENZHEN123456',
+        "HOST":'123.206.27.175',
         "PORT":'3306',
         "OPTIONS":{"init_command":"SET default_storage_engine=INNODB;"}
     }
@@ -140,3 +140,5 @@ TINYMCE_DEFAULT_CONFIG = {
     'width': 600,
     'height': 400,
 }
+#设置url是否自动添加/
+APPEND_SLASH = False
