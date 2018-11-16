@@ -9,6 +9,8 @@ from django.conf import settings
 from django.middleware.csrf import CsrfViewMiddleware
 from itsdangerous import TimedJSONWebSignatureSerializer as TJWS  #引入加密函数
 from itsdangerous import SignatureExpired,BadSignature  #引入加密函数
+from utils.celery.tasks import send_register_active_email
+from django.contrib.auth import authenticate,login
 
 # Create your views here.
 # 使用内置视图
@@ -123,16 +125,18 @@ class RegisterView(View):
             #发送激活链接
         if user == True:
             pass
-        TJWS_ss = TJWS(settings.SECRET_KEY, 7200)
-        info = {'username': username}
-        token = TJWS_ss.dumps(info)
-        # token = token.decode('utf-8')
-        subject = '{},天天生鲜欢迎您'.format(username)
-        message = '天天生鲜欢迎您,{}'.format(username)
-        send = settings.EMAIL_FROM
+        # TJWS_ss = TJWS(settings.SECRET_KEY, 7200)
+        # info = {'username': username}
+        # token = TJWS_ss.dumps(info)
         rec = ['571666271@qq.com']
-        html_message = '<h1>欢迎您注册天天生鲜</h1>，请点击下面连接进行激活<br /><a href="http://123.206.27.175:8001/user/active/{}">http://123.206.27.175:8001/user/active/{}</a>'.format(username,token,token)
-        send_mail(subject, message, send, rec,html_message=html_message)
+        send_register_active_email.delay(username)
+        # token = token.decode('utf-8')
+        # subject = '{},天天生鲜欢迎您'.format(username)
+        # message = '天天生鲜欢迎您,{}'.format(username)
+        # send = settings.EMAIL_FROM
+        # rec = ['571666271@qq.com']
+        # html_message = '<h1>欢迎您注册天天生鲜</h1>，请点击下面连接进行激活<br /><a href="http://123.206.27.175:8001/user/active/{}">http://123.206.27.175:8001/user/active/{}</a>'.format(username,token,token)
+        # send_mail(subject, message, send, rec,html_message=html_message)
         # return render(request, "user/register.html")
         return redirect(reverse('goods:index'))
     def active_email_send(self):
@@ -159,3 +163,20 @@ class ActiveView(View):
 class LoginView(View):
     def get(self,request):
         return render(request, "user/login.html")
+    def post(self,request):
+        username = request.POST.get('username')
+        password = request.POST.get('pwd')
+        if not all([username,password]):
+            return render(request, "user/login.html", {'errmsg': '数据不完整'})
+
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            if user.is_active:
+                #用户已经激活
+                login(request,username)
+                return redirect(reverse('goods:index'))
+            else:
+                #用户 未激活
+                return render(request, "user/login.html", {'errmsg': '请先激活账号'})
+        else:
+            return render(request, "user/login.html", {'errmsg': '账号或密码错误'})

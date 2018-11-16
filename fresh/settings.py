@@ -84,14 +84,40 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME':'fresh',
         "USER":'root',
-        "PASSWORD":'***********',
-        "HOST":'*******************',
+        "PASSWORD":'ZHENZHEN123456',
+        "HOST":'123.206.27.175',
         "PORT":'3306',
         "OPTIONS":{"init_command":"SET default_storage_engine=INNODB;"}
     }
 }
 #Django认证系统使用的模型类###
 AUTH_USER_MODEL = 'user.MyUser'
+#设置redis 缓存
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django_redis.cache.RedisCache',
+#         'LOCATION': 'redis://[:liuyang506]@123.206.27.175:6379/2',
+#         "OPTIONS": {
+#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+#         },
+#     },
+# }
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://123.206.27.175:6379/2",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "PASSWORD": "liuyang506"
+        }
+    }
+}
+# REDIS_TIMEOUT=7*24*60*60
+# CUBES_REDIS_TIMEOUT=60*60
+# NEVER_REDIS_TIMEOUT=365*24*60*60
+#设置session设置
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
@@ -147,6 +173,6 @@ APPEND_SLASH = False
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.163.com'
 EMAIL_PORT = 25
-EMAIL_HOST_USER = '************'
-EMAIL_HOST_PASSWORD = '**************'
-EMAIL_FROM = '天天生鲜<***************>'
+EMAIL_HOST_USER = '18638661283@163.com'
+EMAIL_HOST_PASSWORD = 'liuyang812'
+EMAIL_FROM = '天天生鲜<18638661283@163.com>'
