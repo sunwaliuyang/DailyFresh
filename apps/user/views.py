@@ -1,7 +1,7 @@
 from django.shortcuts import render , redirect
 import re
 from user.models import MyUser,Address
-from django.http import HttpResponse
+from django.http import HttpResponse,JsonResponse
 from django.urls import reverse
 from django.views.generic import View
 from django.core.mail import send_mail
@@ -173,7 +173,7 @@ class LoginView(View):
         if user is not None:
             if user.is_active:
                 #用户已经激活
-                login(request,username)
+                login(request,user)
                 return redirect(reverse('goods:index'))
             else:
                 #用户 未激活
