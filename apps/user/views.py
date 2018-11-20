@@ -162,7 +162,16 @@ class ActiveView(View):
             return HttpResponse('无效激活码？{}'.format(token))
 class LoginView(View):
     def get(self,request):
-        return render(request, "user/login.html")
+        # 判断是否记住了用户名
+        if 'username' in request.COOKIES:
+            username = request.COOKIES.get('username')
+            checked = 'checked'
+        else:
+            username = ''
+            checked = ''
+
+        # 使用模板
+        return render(request, 'user/login.html', {'username': username, 'checked': checked})
     def post(self,request):
         username = request.POST.get('username')
         password = request.POST.get('pwd')
@@ -174,9 +183,49 @@ class LoginView(View):
             if user.is_active:
                 #用户已经激活
                 login(request,user)
-                return redirect(reverse('goods:index'))
+
+                # 获取登录后所要跳转到的地址
+                # 默认跳转到首页
+                next_url = request.GET.get('next', reverse('goods:index'))
+
+                # 跳转到next_url
+                response = redirect(next_url)  # HttpResponseRedirect
+
+                #判断是否需要记录用户信息
+                remember = request.POST.get('remember')
+
+                if remember == 'on':
+                    # 记住用户名
+                    response.set_cookie('username', username, max_age=7 * 24 * 3600)
+                else:
+                    response.delete_cookie('username')
+
+                return response
             else:
                 #用户 未激活
                 return render(request, "user/login.html", {'errmsg': '请先激活账号'})
         else:
             return render(request, "user/login.html", {'errmsg': '账号或密码错误'})
+
+class UserInfoView(View):
+    def get(self,request):
+        return render(request,'user/user_center_info.html',{'page':'user'})
+
+class UserOrderView(View):
+    def get(self,request):
+        return render(request,'user/user_center_order.html',{'page':'order'})
+
+class UserSiteView(View):
+    def get(self,request):
+        return render(request,'user/user_center_site.html',{'page':'address'})
+
+# /user/logout
+class LogoutView(View):
+    '''退出登录'''
+    def get(self, request):
+        '''退出登录'''
+        # 清除用户的session信息
+        logout(request)
+
+        # 跳转到首页
+        return redirect(reverse('goods:index'))

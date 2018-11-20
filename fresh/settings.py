@@ -107,37 +107,15 @@ AUTH_USER_MODEL = 'user.MyUser'
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://123.206.27.175:6379/2",
+        "LOCATION": "redis://123.206.27.175:6379/8",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "PASSWORD": "liuyang506"
         }
     }
 }
-# CACHES = {
-#     'default': {
-#         'BACKEND': 'redis_cache.RedisCache',
-#         'LOCATION': 'redis://[:liuyang506]123.206.27.175:6379/2',
-#     }
-# }
-# CACHES = {
-#     'default': {
-#         'BACKEND': 'redis_cache.RedisCache',
-#         'LOCATION': '123.206.27.175:6379',
-#         'OPTIONS': {
-#             'DB': 2,
-#             'PASSWORD': 'liuyang506',
-#             'PARSER_CLASS': 'redis.connection.HiredisParser',
-#             'CONNECTION_POOL_CLASS': 'redis.BlockingConnectionPool',
-#             'PICKLE_VERSION': -1,
-#         },
-#     },
-# }
 
-# REDIS_TIMEOUT=7*24*60*60
-# CUBES_REDIS_TIMEOUT=60*60
-# NEVER_REDIS_TIMEOUT=365*24*60*60
-#设置session设置
+#配置session的存储
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
 
@@ -208,4 +186,7 @@ CELERY_RESULT_BACKEND = 'redis://[:liuyang506]@123.206.27.175:6379/2'
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_ENABLE_UTC = True
 CELERY_TIMEZONE = TIME_ZONE
+
+# 配置登录url地址
+LOGIN_URL='/user/login' # /accounts/login
 
