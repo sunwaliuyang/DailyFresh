@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'order.apps.OrderConfig',
     'cart.apps.CartConfig',
     'user.apps.UserConfig',
+    'django_celery_results',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -112,6 +114,26 @@ CACHES = {
         }
     }
 }
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'redis_cache.RedisCache',
+#         'LOCATION': 'redis://[:liuyang506]123.206.27.175:6379/2',
+#     }
+# }
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'redis_cache.RedisCache',
+#         'LOCATION': '123.206.27.175:6379',
+#         'OPTIONS': {
+#             'DB': 2,
+#             'PASSWORD': 'liuyang506',
+#             'PARSER_CLASS': 'redis.connection.HiredisParser',
+#             'CONNECTION_POOL_CLASS': 'redis.BlockingConnectionPool',
+#             'PICKLE_VERSION': -1,
+#         },
+#     },
+# }
+
 # REDIS_TIMEOUT=7*24*60*60
 # CUBES_REDIS_TIMEOUT=60*60
 # NEVER_REDIS_TIMEOUT=365*24*60*60
@@ -176,3 +198,14 @@ EMAIL_PORT = 25
 EMAIL_HOST_USER = '18638661283@163.com'
 EMAIL_HOST_PASSWORD = 'liuyang812'
 EMAIL_FROM = '天天生鲜<18638661283@163.com>'
+
+
+# Celery settings
+CELERY_BROKER_URL = 'redis://[:liuyang506]@123.206.27.175:6379/1'
+#: Only add pickle to this list if your broker is secured
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_RESULT_BACKEND = 'redis://[:liuyang506]@123.206.27.175:6379/2'
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_ENABLE_UTC = True
+CELERY_TIMEZONE = TIME_ZONE
+
