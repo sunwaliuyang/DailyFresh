@@ -10,84 +10,11 @@ from django.middleware.csrf import CsrfViewMiddleware
 from itsdangerous import TimedJSONWebSignatureSerializer as TJWS  #引入加密函数
 from itsdangerous import SignatureExpired,BadSignature  #引入加密函数
 from utils.celery.tasks import send_register_active_email
-from django.contrib.auth import authenticate,login
+from django.contrib.auth import authenticate,login,logout
+from utils.mixin import LoginRequiredMixin
+from django_redis import get_redis_connection
+from goods.models import GoodsSku
 
-# Create your views here.
-# 使用内置视图
-# def register(request):
-#     """注册页"""
-#     #第一种写法
-#     if request.method == 'GET':
-#         return render(request, "user/register.html")
-#     elif request.method == 'POST':
-#         username = request.POST.get('user_name')
-#         password = request.POST.get('pwd')
-#         email = request.POST.get('email')
-#         allow = request.POST.get('allow')
-#         # 验证
-#         if not all([username, password, email]):
-#             return render(request, "user/register.html", {'errmsg': '数据不完整'})
-#         if re.match('/^[a-z0-9][\w.\-]*@[a-z0-9\-]+(\.[a-z]{2,5}){1,2}$/', email):
-#             return render(request, "user/register.html", {'errmsg': '邮箱格式 不正确'})
-#         if allow != 'on':
-#             return render(request, "user/register.html", {'errmsg': '请同意用户协议'})
-#         # 检测用户名信息 是否存在
-#         try:
-#             user = MyUser.objects.get(username=username)
-#         except MyUser.DoesNotExist:
-#             user = None
-#         # 业务处理
-#         '''第一种创建方式'''
-#         # user = MyUser()
-#         # user.username = username
-#         # user.password = password
-#         # user.email = email
-#         # user.save()
-#
-#         if user:
-#             return render(request, "user/register.html", {'errmsg': '用户名已经存在'})
-#         else:
-#             user = MyUser.objects.create_user(username, email, password)
-#         if user == True:
-#             pass
-#         # return render(request, "user/register.html")
-#         return redirect(reverse('goods:index'))
-#     #使用类视图
-def register_submit(request):
-    '''接受数据'''
-    username = request.POST.get('user_name')
-    password = request.POST.get('pwd')
-    email = request.POST.get('email')
-    allow = request.POST.get('allow')
-    #验证
-    if not all([username,password,email]):
-        return render(request, "user/register.html",{'errmsg':'数据不完整'})
-    if re.match('/^[a-z0-9][\w.\-]*@[a-z0-9\-]+(\.[a-z]{2,5}){1,2}$/',email):
-        return render(request, "user/register.html", {'errmsg': '邮箱格式 不正确'})
-    if allow != 'on':
-        return render(request, "user/register.html", {'errmsg': '请同意用户协议'})
-    #检测用户名信息 是否存在
-    try:
-        user = MyUser.objects.get(username=username)
-    except MyUser.DoesNotExist:
-        user = None
-    #业务处理
-    '''第一种创建方式'''
-    # user = MyUser()
-    # user.username = username
-    # user.password = password
-    # user.email = email
-    # user.save()
-
-    if  user:
-        return render(request, "user/register.html", {'errmsg': '用户名已经存在'})
-    else:
-        user = MyUser.objects.create_user(username, email, password)
-    if user == True:
-        pass
-    # return render(request, "user/register.html")
-    return redirect(reverse('goods:index'))
-    #返回应答
 
 '''类视图'''
 class RegisterView(View):
@@ -207,17 +134,88 @@ class LoginView(View):
         else:
             return render(request, "user/login.html", {'errmsg': '账号或密码错误'})
 
-class UserInfoView(View):
+class UserInfoView(LoginRequiredMixin,View):
     def get(self,request):
-        return render(request,'user/user_center_info.html',{'page':'user'})
+        user = request.user
+        address = Address.objects.get_default_address(user)
+        #获取用户浏览记录
+        #浏览记录  记录在redis
+        con = get_redis_connection("default")
+        history_key = "history_%d"%user.id
+        sku_ids = con.lrange(history_key,0,4)
+        # 从数据库中查询用户浏览的商品的具体信息
+        # goods_li = GoodsSKU.objects.filter(id__in=sku_ids)
+        #
+        # goods_res = []
+        # for a_id in sku_ids:
+        #     for goods in goods_li:
+        #         if a_id == goods.id:
+        #             goods_res.append(goods)
 
-class UserOrderView(View):
+        #便利获取用户浏览的商品信息
+        goods_li = []
+        for id in sku_ids:
+            goods = GoodsSKU.objects.get(id=id)
+            goods_li.append(goods)
+        # 组织上下文
+        context = {
+            'page':'user',
+            "address":address,
+            'goods_li':goods_li
+        }
+        return render(request,'user/user_center_info.html',context)
+
+class UserOrderView(LoginRequiredMixin,View):
     def get(self,request):
         return render(request,'user/user_center_order.html',{'page':'order'})
 
-class UserSiteView(View):
+class UserSiteView(LoginRequiredMixin,View):
     def get(self,request):
-        return render(request,'user/user_center_site.html',{'page':'address'})
+        user = request.user
+        addr = Address.objects.get_default_address(user)
+        return render(request,'user/user_center_site.html',{'page':'address','address':addr})
+    def post(self,request):
+        # 接收数据
+        receiver = request.POST.get('receiver')
+        address = request.POST.get('addr')
+        zip_code = request.POST.get('zip_code')
+        phone = request.POST.get('phone')
+
+        # 校验数据
+        if not all([receiver, address, phone]):
+            return render(request, 'user_center_site.html', {'errmsg': '数据不完整'})
+
+        # 校验手机号
+        if not re.match(r'^1[3|4|5|7|8|6][0-9]{9}$', phone):
+            return render(request, 'user_center_site.html', {'errmsg': '手机格式不正确'})
+
+        # 业务处理：地址添加
+        # 如果用户已存在默认收货地址，添加的地址不作为默认收货地址，否则作为默认收货地址
+        # 获取登录用户对应User对象
+        user = request.user
+
+        # try:
+        #     addr = Address.objects.get(user=user, is_default=True)
+        # except Address.DoesNotExist:
+        #     # 不存在默认收货地址
+        #     addr = None
+        addr = Address.objects.get_default_address(user)
+
+        if addr:
+            is_default = False
+        else:
+            is_default = True
+
+        # 添加地址
+        Address.objects.create(user=user,
+                               receiver=receiver,
+                               address=address,
+                               zip_code=zip_code,
+                               phone=phone,
+                               is_default=is_default)
+
+        # 返回应答,刷新地址页面
+        return redirect(reverse('user:address'))  # get请求方式
 
 # /user/logout
 class LogoutView(View):

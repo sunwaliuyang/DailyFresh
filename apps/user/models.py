@@ -59,6 +59,16 @@ class MyUser(AbstractBaseUser,BaseModel,PermissionsMixin):
 
     def get_short_name(self):
         return self.username
+class AddressManager(models.Manager):
+    #地址模型管理器类
+    def get_default_address(self,user):
+        try:
+            address = self.get(user=user, is_default=True)  # models.Manager
+        except self.model.DoesNotExist:
+            # 不存在默认收货地址
+            address = None
+
+        return address
 class Address(BaseModel):
     '''地址模型类'''
     user = models.ForeignKey('MyUser',on_delete=models.CASCADE,verbose_name='所属账户')
@@ -67,7 +77,8 @@ class Address(BaseModel):
     zip_code = models.CharField(max_length=6,null=True,verbose_name='邮编')
     phone = models.CharField(max_length=11,verbose_name='联系电话')
     is_default = models.BooleanField(default=False,verbose_name='是否默认')
-
+    # 自定义一个模型管理器对象
+    objects = AddressManager()
     class Meta:
         db_table = 'df_address'
         verbose_name = ''

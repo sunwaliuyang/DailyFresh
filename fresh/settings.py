@@ -95,15 +95,7 @@ DATABASES = {
 #Django认证系统使用的模型类###
 AUTH_USER_MODEL = 'user.MyUser'
 #设置redis 缓存
-# CACHES = {
-#     'default': {
-#         'BACKEND': 'django_redis.cache.RedisCache',
-#         'LOCATION': 'redis://[:liuyang506]@123.206.27.175:6379/2',
-#         "OPTIONS": {
-#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-#         },
-#     },
-# }
+
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
