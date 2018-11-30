@@ -14,7 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path,include
+from django.urls import path,include,re_path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -22,6 +22,8 @@ urlpatterns = [
     path('order/', include('apps.order.urls')),
     path('cart/', include('apps.cart.urls')),
     path('tinymce/', include('tinymce.urls')),
+    # path('search/', include('haystack.urls')),
+    re_path(r'^search', include('haystack.urls')),#使用正则匹配url
     #匹配网站首页
     path('', include('apps.goods.urls')),
 ]
