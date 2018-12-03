@@ -144,7 +144,7 @@ class UserInfoView(LoginRequiredMixin,View):
         history_key = "history_%d"%user.id
         sku_ids = con.lrange(history_key,0,4)
         # 从数据库中查询用户浏览的商品的具体信息
-        # goods_li = GoodsSKU.objects.filter(id__in=sku_ids)
+        # goods_li = GoodsSku.objects.filter(id__in=sku_ids)
         #
         # goods_res = []
         # for a_id in sku_ids:
@@ -155,7 +155,7 @@ class UserInfoView(LoginRequiredMixin,View):
         #便利获取用户浏览的商品信息
         goods_li = []
         for id in sku_ids:
-            goods = GoodsSKU.objects.get(id=id)
+            goods = GoodsSku.objects.get(id=id)
             goods_li.append(goods)
         # 组织上下文
         context = {
