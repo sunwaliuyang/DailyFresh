@@ -15,8 +15,8 @@
 		<a href="{% url 'user:address' %}" class="edit_site">编辑收货地址</a>
 
 	</div>
-	
-	<h3 class="common_title">支付方式</h3>	
+
+	<h3 class="common_title">支付方式</h3>
 	<div class="common_list_con clearfix">
 		<div class="pay_style_con clearfix">
 			<input type="radio" name="pay_style" value="1" checked>
@@ -31,14 +31,14 @@
 	</div>
 
 	<h3 class="common_title">商品列表</h3>
-	
+
 	<div class="common_list_con clearfix">
 		<ul class="goods_list_th clearfix">
 			<li class="col01">商品名称</li>
 			<li class="col02">商品单位</li>
 			<li class="col03">商品价格</li>
 			<li class="col04">数量</li>
-			<li class="col05">小计</li>		
+			<li class="col05">小计</li>
 		</ul>
         {% for sku in skus %}
 		<ul class="goods_list_td clearfix">
@@ -66,14 +66,14 @@
 	<div class="order_submit clearfix">
         {% csrf_token %}
 		<a href="javascript:;" sku_ids={{ sku_ids }} id="order_btn">提交订单</a>
-	</div>	
+	</div>
 {% endblock body %}
 {% block bottom %}
 	<div class="popup_con">
 		<div class="popup">
 			<p>订单提交成功！</p>
 		</div>
-		
+
 		<div class="mask"></div>
 	</div>
 {% endblock bottom %}
@@ -91,10 +91,19 @@
             params = {'addr_id':addr_id, 'pay_method':pay_method, 'sku_ids':sku_ids,
                         'csrfmiddlewaretoken':csrf}
             // 发起ajax post请求，访问/order/commit, 传递的参数: addr_id pay_method, sku_ids
-            $.post('/order/commit/', params, function (data) {
+            $.post('/order/commit', params, function (data) {
                 if (data.res == 5){
                     // 创建成功
-                    alert('创建成功')
+                    localStorage.setItem('order_finish',2);
+                    $('.popup_con').fadeIn('fast', function() {
+
+                        setTimeout(function(){
+                            $('.popup_con').fadeOut('fast',function(){
+                                window.location.href = '/user/order/1';
+                            });
+                        },3000)
+
+                    });
                 }
                 else{
                     alert(data.errmsg)
@@ -102,17 +111,7 @@
             })
 
 
-{#			localStorage.setItem('order_finish',2);#}
-{##}
-{#			$('.popup_con').fadeIn('fast', function() {#}
-{##}
-{#				setTimeout(function(){#}
-{#					$('.popup_con').fadeOut('fast',function(){#}
-{#						window.location.href = 'index.html';#}
-{#					});	#}
-{#				},3000)#}
-{#				#}
-{#			});#}
+
 		});
 	</script>
 {% endblock bottomfiles %}

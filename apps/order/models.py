@@ -6,6 +6,21 @@ from django.conf import settings
 # Create your models here.
 class OrderInfo(BaseModel):
     '''订单模型类'''
+    '''订单模型类'''
+    PAY_METHODS = {
+        '1': "货到付款",
+        '2': "微信支付",
+        '3': "支付宝",
+        '4': '银联支付'
+    }
+
+    '''订单模型类'''
+    PAY_METHODS = {
+        '1': "货到付款",
+        '2': "微信支付",
+        '3': "支付宝",
+        '4': '银联支付'
+    }
     PAY_TYPE_CHOICES = (
         (0,'货到付款'),
         (1,'微信支付'),
@@ -13,6 +28,14 @@ class OrderInfo(BaseModel):
         (3,'银联支付'),
         (4,'信用卡支付'),
     )
+    ORDER_STATUS = {
+        0: '待支付',
+        1: '待支付',
+        2: '待发货',
+        3: '待收货',
+        4: '待评价',
+        5: '已完成'
+    }
     ORDER_STATUS_CHOICES = (
         (0,'待支付'),
         (1,'支付中'),
@@ -33,7 +56,7 @@ class OrderInfo(BaseModel):
     total_count = models.IntegerField(default=1,verbose_name='商品数量')
     total_price = models.DecimalField(max_digits=10,decimal_places=2,verbose_name='商品总价')
     transit_price = models.DecimalField(max_digits=10,decimal_places=2,verbose_name='订单运费')
-    order_status = models.SmallIntegerField(default=0,choices=ORDER_STATUS_CHOICES,verbose_name='订单状态')
+    order_status = models.SmallIntegerField(default=1,choices=ORDER_STATUS_CHOICES,verbose_name='订单状态')
     trade_no = models.CharField(max_length=128,verbose_name='支付编号')
 
     class Meta:

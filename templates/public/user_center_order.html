@@ -16,7 +16,7 @@
 						<tr>
 							<td width="55%">
                                 {% for order_sku in order.order_skus %}
-								<ul class="order_goods_list clearfix">
+								<ul class="order_goods_list clearfix">					
 									<li class="col01"><img src="{{ order_sku.sku.image.url }}"></li>
 									<li class="col02">{{ order_sku.sku.name }}<em>{{ order_sku.price }}元/{{ order_sku.sku.unite }}</em></li>
 									<li class="col03">{{ order_sku.count }}</li>
@@ -70,7 +70,7 @@
         status = $(this).attr('status')
         // 获取订单id
         order_id = $(this).attr('order_id')
-        if (status == 1 || status == 0){
+        if (status == 1){
             // 进行支付
             csrf = $('input[name="csrfmiddlewaretoken"]').val()
             // 组织参数
@@ -79,9 +79,7 @@
             $.post('/order/pay', params, function (data) {
                 if (data.res == 3){
                     // 引导用户到支付页面
-                    console.log(data.pay_url)
-//                    window.open(data.pay_url)
-                    window.location.href = data.pay_url
+                    window.open(data.pay_url)
                     // 浏览器访问/order/check, 获取支付交易的结果
                     // ajax post 传递参数:order_id
                     $.post('/order/check', params, function (data){
